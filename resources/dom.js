@@ -93,7 +93,7 @@ module.exports = {
         checkChild(child, parent);
       });
       function checkChild(child, parent) {
-        if (checkFunction(child) == true) {
+        if (checkFunction(child) === true) {
           child = appendPrototypes(child, parent);
           childNodes.push(child);
         }

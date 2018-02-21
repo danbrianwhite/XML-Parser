@@ -9,12 +9,12 @@ function parseTagInner(inner, index) {
   var currIndex = 0;
   while (getTag(currIndex, inner) != null) {
     var tag = getTag(currIndex, inner);
-    if (typeof tag == "string") {
+    if (typeof tag === "string") {
       var tag = checkExclamationTag(/<!\[CDATA\[/, /\]\]>/, tag, inner);
       inners.push(getTextNode(tag, index));
       currIndex = currIndex + tag.length;
     }
-    else if (typeof tag == "object") {
+    else if (typeof tag === "object") {
       inners.push(getElement(tag, index));
       currIndex = tag.end.end + 1;
     }
@@ -25,7 +25,7 @@ function parseTagInner(inner, index) {
 function checkExclamationTag(exclStart, exclEnd, tag, inner) {
   var charDataStart = tag.search(exclStart);
   if (charDataStart > -1) {
-    var charDataEnd = inner.regexIndexOf(exclEnd, charDataStart );
+    var charDataEnd = regexIndexOf(inner, exclEnd, charDataStart );
     if (charDataEnd > -1) {
       return inner.substring(charDataStart, charDataEnd + 3);
     }
@@ -53,11 +53,11 @@ function getTextNode(tag, index) {
 function getAttributes(begin) {
   var inner = begin.inner.substring(begin.tagName.length + 1);
   var attrs = {};
-  inner.substring(0, inner.length - 1).replaceWithoutQuotes(/\s{1,}/g, "\\_").split("\\_").forEach(function(attr, i) {
+  replaceWithoutQuotes(inner.substring(0, inner.length - 1), /\s+/g, "\\_").split("\\_").forEach(function(attr, i) {
     if (attr != "") {
       var opPos = attr.search("=");
       var attrName = attr.substring(0, opPos > -1 ? opPos : Infinity);
-      var attrVal = attr.substring(opPos + 1, Infinity).replaceWithoutQuotes(/./g, "").replace(/"/g, "").replace(/&#x3e;/g, ">");
+      var attrVal = replaceWithoutQuotes(attr.substring(opPos + 1, Infinity), /./g, "").replace(/"/g, "").replace(/&#x3e;/g, ">");
       if (attrName.match(/[a-z]/)) attrs[attrName] = opPos > -1 ? attrVal : true;
     }
   });
@@ -65,7 +65,7 @@ function getAttributes(begin) {
 }
 function getTagBegin(index, context) {
   var begin = {
-    start: context.regexIndexOf(regExsTag('([a-z]|[A-Z]|[0-9]|\\?){1,}'), index)
+    start: regexIndexOf(context, regExsTag('([a-z]|[A-Z]|[0-9]|\\?){1,}'), index)
   };
   begin.end = context.indexOf(">", begin.start);
   begin.inner = context.substring(begin.start, begin.end + 1);
@@ -77,28 +77,28 @@ function getTagEnd(begin, context) {
     start: begin.end,
     founded: false
   };
-  var endingPositions = context.indexesOf(regExsTag(begin.tagName, "/"), begin.end + 1);
+  var endingPositions = indexesOf(context, regExsTag(begin.tagName, "/"), begin.end + 1);
   endingPositions.forEach(function(endingPos) {
     var innerPosText = context.substring(begin.end + 1, endingPos - 1);
-    var innerOpenings = innerPosText.indexesOf(regExsTag(begin.tagName));
-    var innerClosings = innerPosText.indexesOf(regExsTag(begin.tagName, "/"));
+    var innerOpenings = indexesOf(innerPosText, regExsTag(begin.tagName));
+    var innerClosings = indexesOf(innerPosText, regExsTag(begin.tagName, "/"));
     if (innerClosings.length >= innerOpenings.length && end.founded === false) {
       end.founded = true;
       end.start = endingPos - 1;
     }
   });
-  end.end = context.regexIndexOf(/>/, end.start);
+  end.end = regexIndexOf(context, />/, end.start);
   end.inner = context.substring(end.start, end.end + 1);
   end.tagName = end.inner.split(" ")[0].replace(/(<|>)/g, "");
   return end;
 }
 function getTag(index, context) {
   //&#x3e;
-  context = context.replaceWithinQuotes(/>/g, "&#x3e;");
+  context = replaceWithinQuotes(context, />/g, "&#x3e;");
   var tag = {
     begin: getTagBegin(index, context)
   }
-  if (tag.begin.start > index || (tag.begin.start == -1 && index < context.length - 1)) {
+  if (tag.begin.start > index || (tag.begin.start === -1 && index < context.length - 1)) {
     return context.substring(index, tag.begin.start > -1 ? tag.begin.start : undefined);
   }
   if (tag.begin.start < 0) {
@@ -109,31 +109,31 @@ function getTag(index, context) {
   tag.closing = tag.end.founded;
   if (!tag.closing) {
     var closingChar = context.substr(tag.begin.end - 1, 1);
-    tag.closingChar = closingChar == ("?" || "!" || "/") ? closingChar : null;
+    tag.closingChar = ["/", "?", "!"].includes(closingChar) ? closingChar : null;
   }
   return tag;
 }
 function regExsTag(name, addition) {
   return new RegExp('<' + (addition || "") + name + '(\\s(\\s|[a-z]|[A-Z]|[0-9]|\.|:|\/|\"|=)*>|>)');
 }
-String.prototype.replaceWithoutQuotes = function(find, replace) {
-  return this.split('"').map(function(str, index) {
+function replaceWithoutQuotes(string, find, replace) {
+  return string.split('"').map(function(str, index) {
     return index % 2 ? str : str.replace(find, replace);
   }).join('"');
 }
-String.prototype.replaceWithinQuotes = function(find, replace) {
-  return this.split('"').map(function(str, index) {
+function replaceWithinQuotes(string, find, replace) {
+  return string.split('"').map(function(str, index) {
     return index % 2 ? str.replace(find, replace) : str;
   }).join('"');
 }
-String.prototype.regexIndexOf = function(regex, startpos) {
-  var indexOf = this.substring(startpos || 0).search(regex);
+function regexIndexOf(string, regex, startpos) {
+  var indexOf = string.substring(startpos || 0).search(regex);
   return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
 }
-String.prototype.indexesOf = function(regex, start) {
+function indexesOf(string, regex, start) {
   var result = [];
-  while (this.regexIndexOf(regex, (start || 0)) > -1) {
-    start = this.regexIndexOf(regex, (start || 0)) + 1;
+  while (regexIndexOf(string, regex, (start || 0)) > -1) {
+    start = regexIndexOf(string, regex, (start || 0)) + 1;
     result.push(start);
   }
   return result;

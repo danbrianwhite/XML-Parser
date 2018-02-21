@@ -1,7 +1,7 @@
 module.exports = {
   stringify: function(xmlObj, spaces) {
     var result = createInner(xmlObj, spaces, 0);
-    if (spaces == 0) {
+    if (spaces === 0) {
       result = result.replace(/\n/g, "");
     }
     return result;
