@@ -3,7 +3,7 @@ module.exports = {
     var result = parseTagInner(string, 0);
     return result;
   }
-}
+};
 function parseTagInner(inner, index) {
   var inners = [];
   var currIndex = 0;
@@ -97,7 +97,7 @@ function getTag(index, context) {
   context = replaceWithinQuotes(context, />/g, "&#x3e;");
   var tag = {
     begin: getTagBegin(index, context)
-  }
+  };
   if (tag.begin.start > index || (tag.begin.start === -1 && index < context.length - 1)) {
     return context.substring(index, tag.begin.start > -1 ? tag.begin.start : undefined);
   }

@@ -57,14 +57,14 @@ module.exports = {
       getElementsByCheckFunction: function(check) {
         return troughChilds(this, check);
       }
-    }
+    };
     self.document = appendPrototypes(self.document, self);
     troughChilds(self.document, function(child) {
       if (child) {
         appendPrototypes(child, self.document);
       }
     });
-    function appendPrototypes(node, parent) {
+    function appendPrototypes(node) {
       Object.keys(domMethods).forEach(function(methodName) {
         node[methodName] = domMethods[methodName];
       });
@@ -106,4 +106,4 @@ module.exports = {
       return childNodes;
     }
   }
-}
+};

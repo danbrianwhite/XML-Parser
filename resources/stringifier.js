@@ -6,7 +6,7 @@ module.exports = {
     }
     return result;
   }
-}
+};
 function createInner(tagInner, spaces, layer) {
   var indent = (function() {
     var spaceStr = (function() {
