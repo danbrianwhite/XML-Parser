@@ -24,7 +24,7 @@ module.exports = {
         var self = this;
         troughChilds(self, function(child) {
           if (child === childNode) {
-            var index = self.childNodes.indexOfKey(child.index, "index");
+            var index = self.childNodes.indexOf(child);
             delete self.childNodes[index];
             self.childNodes = (function() {
               var newArray = [];
@@ -106,12 +106,4 @@ module.exports = {
       return childNodes;
     }
   }
-}
-Array.prototype.indexOfKey = function(value, key) {
-  for (var i = 0; i < this.length; i++) {
-    if (this[i][key] === value) {
-      return i;
-    }
-  }
-  return -1;
 }
