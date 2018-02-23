@@ -1,8 +1,11 @@
+var parse = require('./parser').parseFromString;
+
 module.exports = {
   DOM: function(xmlObj) {
+    var xmlObjClone = JSON.parse(JSON.stringify(xmlObj));
     var self = this;
     self.document = {
-      childNodes: typeof xmlObj == "object" ? xmlObj : module.exports.parse(xmlObj)
+      childNodes: typeof xmlObjClone == "object" ? xmlObjClone : parse(xmlObjClone)
     };
     var domMethods = {
       getElementsByTagName: function(tagName) {

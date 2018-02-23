@@ -1,6 +1,10 @@
 module.exports = {
   stringify: function(xmlObj, spaces) {
-    var result = createInner(xmlObj, spaces, 0);
+    var xmlObjClone = JSON.parse(JSON.stringify(xmlObj));
+    if(xmlObjClone.document){
+      xmlObjClone = xmlObjClone.document.childNodes;
+    }
+    var result = createInner(xmlObjClone, spaces, 0);
     if (spaces === 0) {
       result = result.replace(/\n/g, "");
     }
